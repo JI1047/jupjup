@@ -1,6 +1,8 @@
 package com.example.Integrated.login.Mapper;
 
 import com.example.Integrated.login.Dto.Login.LocalResponseDto;
+import com.example.Integrated.login.Dto.Login.LoginSuccessDto;
+import com.example.Integrated.login.Dto.Login.SocialResponseDto;
 import com.example.Integrated.login.Dto.Signup.LocalSignupDto;
 import com.example.Integrated.login.Dto.Signup.SocialSignupDto;
 import com.example.Integrated.login.Dto.Signup.UpdatedDto;
@@ -8,6 +10,7 @@ import com.example.Integrated.login.Dto.User.UserDetailDto;
 import com.example.Integrated.login.Dto.User.UserDto;
 import com.example.Integrated.login.Entity.User.*;
 import com.example.Integrated.login.jwt.CustomLocalUser;
+import com.example.Integrated.login.jwt.CustomUser;
 import com.example.Integrated.login.jwt.JwtProvider;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -112,6 +115,35 @@ public class UserMapper {
                 .user(userDto)
                 .jwt(customLocalUser.getJwt())
                 .userDetail(userDetailDto)
+                .build();
+    }
+
+    public static LoginSuccessDto toSuccessDto(CustomUser customUser) {
+        User user = customUser.getUser();
+        UserDetail userDetail = customUser.getUserDetail();
+
+        return LoginSuccessDto.builder()
+                .nickname(user.getNickname())
+                .name(userDetail.getName())
+                .phone(userDetail.getPhone())
+                .gender(userDetail.getGender())
+                .birth(userDetail.getBirth())
+                .address(userDetail.getAddress())
+                .build();
+    }
+
+    public static SocialResponseDto tosocialResponseDto(CustomUser customUser) {
+        User user = customUser.getUser();
+        UserDetail userDetail = customUser.getUserDetail();
+
+        return SocialResponseDto.builder()
+                .jwt(customUser.getJwt())
+                .nickname(user.getNickname())
+                .name(userDetail.getName())
+                .phone(userDetail.getPhone())
+                .gender(userDetail.getGender())
+                .birth(userDetail.getBirth())
+                .address(userDetail.getAddress())
                 .build();
     }
 

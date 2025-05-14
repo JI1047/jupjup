@@ -19,4 +19,6 @@ public class CustomUser {
         this.userDetail = userDetail;
 
     }
+
+
  }

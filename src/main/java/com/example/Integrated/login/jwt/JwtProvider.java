@@ -1,13 +1,11 @@
 package com.example.Integrated.login.jwt;
 
-import com.example.Integrated.login.Entity.User.SocialProvider;
 import com.example.Integrated.login.Entity.User.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +31,11 @@ public class JwtProvider {
         return claims.get("snsId", String.class);
 
     }
+    public String getUserIdFromToken(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getSubject();
+    }
+
 
     public String getProviderFromToken(String token) {
         Claims claims = parseClaims(token);

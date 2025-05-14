@@ -2,6 +2,7 @@ package com.example.Integrated.login.Entity.User;
 
 import jakarta.persistence.*;
 import lombok.*;
+import net.minidev.json.annotate.JsonIgnore;
 
 @Entity
 @Table(name = "user_detail")
@@ -9,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+
 public class UserDetail {
 
     @Id
@@ -16,7 +18,8 @@ public class UserDetail {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")   // FK
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     private String name;

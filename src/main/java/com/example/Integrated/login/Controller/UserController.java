@@ -2,17 +2,23 @@ package com.example.Integrated.login.Controller;
 
 import com.example.Integrated.login.Dto.Login.LocalRequestDto;
 import com.example.Integrated.login.Dto.Login.LocalResponseDto;
+import com.example.Integrated.login.Dto.Login.LoginSuccessDto;
 import com.example.Integrated.login.Dto.Login.SocialResponseDto;
 import com.example.Integrated.login.Dto.Signup.LocalSignupDto;
 import com.example.Integrated.login.Dto.Signup.SocialSignupDto;
 import com.example.Integrated.login.Entity.User.SocialProvider;
+import com.example.Integrated.login.Entity.User.User;
+import com.example.Integrated.login.Entity.User.UserDetail;
+import com.example.Integrated.login.Mapper.UserMapper;
 import com.example.Integrated.login.Service.UserService;
 import com.example.Integrated.login.jwt.CustomLocalUser;
 import com.example.Integrated.login.jwt.CustomOAuth2User;
+import com.example.Integrated.login.jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,14 +65,23 @@ public class UserController {
 
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-        SocialResponseDto response = new SocialResponseDto(
 
-                oAuth2User.getUser(),
-                oAuth2User.getJwt(),
-                oAuth2User.getUserDetail()
-        );
+        System.out.println("🔥 /token 진입 - JWT: " + oAuth2User.getJwt());
+        SocialResponseDto response = UserMapper.tosocialResponseDto(oAuth2User);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/login-success")
+    public ResponseEntity<LoginSuccessDto> loginSuccess(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+        UserDetail detail = user.getUserDetail();
+
+        // 여기서 jwt를 null로 넣음
+        CustomLocalUser custom = new CustomLocalUser(user, null, detail);
+        LoginSuccessDto dto = UserMapper.toSuccessDto(custom);
+
+        return ResponseEntity.ok(dto);
     }
 
 

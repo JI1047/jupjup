@@ -9,6 +9,7 @@ import com.example.Integrated.login.Repository.User.SocialAccountRepository;
 import com.example.Integrated.login.jwt.CustomOAuth2User;
 import com.example.Integrated.login.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -19,8 +20,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+import static com.mysql.cj.conf.PropertyKey.logger;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
+
 public class OAuth2Service implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
     private final SocialAccountRepository socialAccountRepository;
     private final JwtProvider jwtProvider;
@@ -46,9 +51,13 @@ public class OAuth2Service implements OAuth2UserService<OAuth2UserRequest, OAuth
         }
 
         User user = account.getUser();
+
         String jwt = jwtProvider.generateToken(user);
 
+
         UserDetail userDetails = user.getUserDetail();
+
+
         return new CustomOAuth2User(user, jwt, userDetails);
 
     }
