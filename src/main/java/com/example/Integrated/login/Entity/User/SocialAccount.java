@@ -18,14 +18,13 @@ public class SocialAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")   // FK
+    @OneToOne(mappedBy = "socialAccount", fetch = FetchType.LAZY)
     private User user;
 
     private String snsId;
 
     @Enumerated(EnumType.STRING)
-    private SocialProvider provider;        // "kakao", "naver", "google"
+    private SocialProvider provider;
 
 
 

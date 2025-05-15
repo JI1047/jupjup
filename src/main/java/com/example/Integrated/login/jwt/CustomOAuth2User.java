@@ -19,6 +19,7 @@ public class CustomOAuth2User extends CustomUser implements OAuth2User{
         super(user,jwt,userDetail);
 
     }
+    Long userId=user.getId();
 
 
     @Override
@@ -33,6 +34,6 @@ public class CustomOAuth2User extends CustomUser implements OAuth2User{
 
     @Override
     public String getName() {
-        return user.getId().toString(); // Spring Security 내부에서 사용하는 식별자
+        return String.valueOf(userId); // 또는 user.getId().toString()
     }
 }

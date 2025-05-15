@@ -1,9 +1,6 @@
 package com.example.Integrated.login.Service;
 
-import com.example.Integrated.login.Entity.User.SocialAccount;
-import com.example.Integrated.login.Entity.User.SocialProvider;
-import com.example.Integrated.login.Entity.User.User;
-import com.example.Integrated.login.Entity.User.UserDetail;
+import com.example.Integrated.login.Entity.User.*;
 import com.example.Integrated.login.Exception.OAuth2UserNotRegisteredException;
 import com.example.Integrated.login.Repository.User.SocialAccountRepository;
 import com.example.Integrated.login.jwt.CustomOAuth2User;
@@ -53,6 +50,7 @@ public class OAuth2Service implements OAuth2UserService<OAuth2UserRequest, OAuth
         User user = account.getUser();
 
         String jwt = jwtProvider.generateToken(user);
+
 
 
         UserDetail userDetails = user.getUserDetail();

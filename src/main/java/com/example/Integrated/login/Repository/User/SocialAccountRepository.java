@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface SocialAccountRepository extends JpaRepository<SocialAccount, Long> {
 
-    @EntityGraph(attributePaths = "user")
+    @EntityGraph(attributePaths = {"user", "user.userDetail"})
     SocialAccount findBySnsIdAndProvider(String snsId, SocialProvider provider);
+
 }

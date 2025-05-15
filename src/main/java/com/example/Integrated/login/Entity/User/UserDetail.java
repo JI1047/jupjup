@@ -17,14 +17,12 @@ public class UserDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
+    @OneToOne(mappedBy = "userDetail", fetch = FetchType.LAZY)
     private User user;
 
     private String name;
     private String phone;
-    private Enum<Gender> gender;
+    private Gender gender;
     private String birth;
     private String address;
 

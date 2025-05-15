@@ -53,7 +53,6 @@ public class JwtProvider {
     public String generateToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getId().toString())
-                .claim("nickname", user.getNickname())
                 .claim("loginType", user.getLoginType().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1일
