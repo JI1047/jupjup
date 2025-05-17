@@ -15,6 +15,7 @@ public class CustomLocalUser extends CustomUser implements UserDetails {
     }
 
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

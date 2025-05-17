@@ -1,9 +1,9 @@
 package com.example.Integrated.login.Dto.Login;
 
 
+import com.example.Integrated.login.Dto.User.UserDetailDto;
+import com.example.Integrated.login.Dto.User.UserDto;
 import com.example.Integrated.login.Entity.User.Gender;
-import com.example.Integrated.login.Entity.User.User;
-import com.example.Integrated.login.Entity.User.UserDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,9 +11,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class SocialResponseDto {
-
-    private String jwt;
+public class LoginSuccessDto {
 
     private String nickname;
 
@@ -26,4 +24,5 @@ public class SocialResponseDto {
     private String birth;
 
     private String address;
+
 }

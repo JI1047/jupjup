@@ -17,8 +17,7 @@ public class LocalAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")   // FK
+    @OneToOne(mappedBy = "localAccount", fetch = FetchType.LAZY)
     private User user;
 
     private String email;           // 로컬 로그인 이메일

@@ -14,9 +14,11 @@ import java.time.LocalDate;
 public class LocalSignupDto {
 
     private String nickname;
+    private LocalDate createdAt;
+
     private String email;
     private String password;
-    private LocalDate createdAt;
+
 
     private String name;
     private String phone;

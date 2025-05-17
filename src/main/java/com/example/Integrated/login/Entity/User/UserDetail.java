@@ -2,6 +2,7 @@ package com.example.Integrated.login.Entity.User;
 
 import jakarta.persistence.*;
 import lombok.*;
+import net.minidev.json.annotate.JsonIgnore;
 
 @Entity
 @Table(name = "user_detail")
@@ -9,19 +10,22 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+
 public class UserDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")   // FK
+    @OneToOne(mappedBy = "userDetail", fetch = FetchType.LAZY)
     private User user;
 
     private String name;
     private String phone;
-    private Enum<Gender> gender;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
     private String birth;
     private String address;
 
