@@ -84,6 +84,9 @@ public class UserController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/check-email")
+    public ResponseEntity<String> checkEmail(@RequestParam("email") String email) {
 
-
+        return userService.checkEmail(email);
+    }
 }

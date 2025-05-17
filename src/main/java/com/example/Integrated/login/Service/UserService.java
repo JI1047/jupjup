@@ -14,6 +14,8 @@ import com.example.Integrated.login.Repository.User.UserRepository;
 import com.example.Integrated.login.jwt.CustomLocalUser;
 import com.example.Integrated.login.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -101,5 +103,16 @@ public class UserService {
 
 
     }
+
+
+    public ResponseEntity<String> checkEmail(String email) {
+        if (localAccountRepository.existsByEmail(email)) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT) // 409 Conflict
+                    .body("아이디가 중복됨");
+        }
+        return ResponseEntity.ok("사용 가능한 이메일입니다");
+    }
+
 
 }

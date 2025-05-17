@@ -22,7 +22,10 @@ public class UserDetail {
 
     private String name;
     private String phone;
+
+    @Enumerated(EnumType.STRING)
     private Gender gender;
+
     private String birth;
     private String address;
 
