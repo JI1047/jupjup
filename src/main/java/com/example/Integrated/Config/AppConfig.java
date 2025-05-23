@@ -1,4 +1,4 @@
-package com.example.Integrated.login.Config;
+package com.example.Integrated.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
