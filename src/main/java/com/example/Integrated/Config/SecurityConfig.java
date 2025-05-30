@@ -1,4 +1,4 @@
-package com.example.Integrated.login.Config;
+package com.example.Integrated.Config;
 
 import com.example.Integrated.login.Repository.User.UserRepository;
 import com.example.Integrated.login.Service.OAuth2Service;
