@@ -17,15 +17,11 @@ public class PointHour {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point_id")  // FK
-    private Point point;
 
 
     @Enumerated(EnumType.STRING)
     private DayOfWeek day;
 
-    private String openHour;
+    private String salsHr;
 
-    private String closeHour;
 }

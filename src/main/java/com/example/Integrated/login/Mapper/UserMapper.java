@@ -19,11 +19,6 @@ import java.time.LocalDateTime;
 @Builder
 public class UserMapper {
 
-
-
-
-
-
     public static User toLocalUser(UserDetail userDetail,LocalAccount localAccount) {
         return User.builder()
                 .userDetail(userDetail)

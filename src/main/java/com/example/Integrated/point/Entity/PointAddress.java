@@ -16,8 +16,7 @@ public class PointAddress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "pointAddress", fetch = FetchType.LAZY)
-    private Point point;
+
 
     private String roadAddress;
 

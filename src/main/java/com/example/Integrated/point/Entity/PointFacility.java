@@ -15,8 +15,6 @@ public class PointFacility {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "pointFacility", fetch = FetchType.LAZY)
-    private Point point;
 
     private String convenienceInfo;
 
