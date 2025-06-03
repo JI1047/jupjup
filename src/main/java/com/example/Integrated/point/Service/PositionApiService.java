@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -114,5 +115,18 @@ public class PositionApiService {
         System.out.println((String) obj.get(key));
         return obj.containsKey(key) ? (String) obj.get(key) : "";
     }
+
+    public List<PositionDto> getPosition() {
+
+        List<Point> points = pointRepository.findTop18ByOrderByIdAsc();
+        List<PositionDto> dtos=new ArrayList<>();
+        for(Point point : points) {
+            PositionDto positionDto = PointMapper.toPositionDto(point);
+            dtos.add(positionDto);
+
+        }
+        return dtos;
+    }
+
 
 }

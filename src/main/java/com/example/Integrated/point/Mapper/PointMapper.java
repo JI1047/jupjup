@@ -98,4 +98,15 @@ public class PointMapper {
         }
     }
 
+    public static PositionDto toPositionDto(Point point) {
+        return PositionDto.builder()
+                .name(point.getName())
+                .latitude(point.getLatitude())
+                .longitude(point.getLongitude())
+                .lotAddress(point.getPointAddress().getLotAddress())
+                .tel(point.getTel())
+                .description(point.getDescription())
+                .build();
+    }
+
 }
