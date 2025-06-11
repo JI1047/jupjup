@@ -35,10 +35,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public Long registerLocalUser(LocalSignupDto dto) {
-        // User 생성
-
-
-
 
         // LocalAccount 생성
         String encodedPassword = passwordEncoder.encode(dto.getPassword());

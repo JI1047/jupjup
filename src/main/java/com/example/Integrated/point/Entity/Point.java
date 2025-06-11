@@ -31,6 +31,9 @@ public class Point {
 
     private String homepage;
 
+
+
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "point_address_id")
     private PointAddress pointAddress;
@@ -39,7 +42,8 @@ public class Point {
     @JoinColumn(name = "point_facility_id")
     private PointFacility pointFacility;
 
-    @OneToMany(mappedBy = "point", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "point_id") // FK를 PointHour 테이블에 생성
     private List<PointHour> operatingHours;
 
 }
