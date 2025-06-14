@@ -14,6 +14,7 @@ import java.io.IOException;
 @Component
 public class OAuth2AuthFailureHandler implements AuthenticationFailureHandler {
 
+    //로그인 실패시(DB에 snsid,provider조합으로 조회했을 때 계정이 없을시 snsId,provider을 가지고 소셜 전용 회원가입 페이지로 이동)
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {

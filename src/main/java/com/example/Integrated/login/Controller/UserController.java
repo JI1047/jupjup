@@ -14,8 +14,10 @@ import com.example.Integrated.login.Service.UserService;
 import com.example.Integrated.login.jwt.CustomLocalUser;
 import com.example.Integrated.login.jwt.CustomOAuth2User;
 import com.example.Integrated.login.jwt.CustomUserDetails;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -55,22 +57,23 @@ public class UserController {
 
     }
 
-    @GetMapping("/token")
-    public ResponseEntity<SocialResponseDto> issueToken() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (!(authentication.getPrincipal() instanceof CustomOAuth2User)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-
-
-        System.out.println("🔥 /token 진입 - JWT: " + oAuth2User.getJwt());
-        SocialResponseDto response = UserMapper.tosocialResponseDto(oAuth2User);
-
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/token")
+//    public ResponseEntity<SocialResponseDto> issueToken() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        if (!(authentication.getPrincipal() instanceof CustomOAuth2User)) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        }
+//
+//        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+//
+//
+//        System.out.println("🔥 /token 진입 - JWT: " + oAuth2User.getJwt());
+//
+//        SocialResponseDto response = UserMapper.tosocialResponseDto(oAuth2User);
+//
+//        return ResponseEntity.ok(response);
+//    }
 
     @GetMapping("/login-success")
     public ResponseEntity<LoginSuccessDto> loginSuccess(@AuthenticationPrincipal CustomUserDetails userDetails) {
