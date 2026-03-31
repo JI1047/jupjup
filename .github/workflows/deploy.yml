@@ -9,7 +9,7 @@ on:
 env:
   IMAGE_NAME: jubjub-backend
   CONTAINER_NAME: jubjub-backend
-  REMOTE_IMAGE_TAR: /home/ec2-user/jubjub-backend.tar
+  REMOTE_IMAGE_TAR: /tmp/jubjub-backend.tar
 
 jobs:
   deploy:
