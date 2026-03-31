@@ -1,0 +1,62 @@
+name: Deploy to jubjub-server
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: jubjub-backend
+  CONTAINER_NAME: jubjub-backend
+  REMOTE_IMAGE_TAR: /home/ec2-user/jubjub-backend.tar
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Build Spring Boot jar
+        run: ./gradlew bootJar
+
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:${{ github.sha }} .
+
+      - name: Save Docker image
+        run: docker save -o $IMAGE_NAME.tar $IMAGE_NAME:${{ github.sha }}
+
+      - name: Configure SSH key
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s" "$EC2_SSH_KEY" > ~/.ssh/jubjub.pem
+          chmod 600 ~/.ssh/jubjub.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload image to EC2
+        run: |
+          scp -i ~/.ssh/jubjub.pem $IMAGE_NAME.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$REMOTE_IMAGE_TAR
+
+      - name: Deploy container on EC2
+        run: |
+          ssh -i ~/.ssh/jubjub.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            set -e
+            docker load -i $REMOTE_IMAGE_TAR
+            docker stop $CONTAINER_NAME || true
+            docker rm $CONTAINER_NAME || true
+            docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8080:8080 $IMAGE_NAME:${{ github.sha }}
+            rm -f $REMOTE_IMAGE_TAR
+          EOF

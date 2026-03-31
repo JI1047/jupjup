@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+.env
+jupjup.pem
+.claude/
+src/main/resources/application-local.properties
