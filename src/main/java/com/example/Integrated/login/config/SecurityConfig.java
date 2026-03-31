@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -23,6 +22,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .httpBasic(httpBasic -> httpBasic.disable())
+            .oauth2Login(oauth -> oauth.disable())
             .formLogin(formLogin -> formLogin.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -36,7 +36,6 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
-            .oauth2Login(Customizer.withDefaults())
             .exceptionHandling(ex -> ex.authenticationEntryPoint(new JsonAuthenticationEntryPoint()));
 
         return http.build();
