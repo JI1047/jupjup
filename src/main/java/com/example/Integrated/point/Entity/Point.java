@@ -1,0 +1,55 @@
+package com.example.Integrated.point.Entity;
+
+import com.example.Integrated.Item.Entity.PointRecycleItem;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "point")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class Point {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private String region;
+
+    private double latitude;
+
+    private double longitude;
+
+    private String description;
+
+    private String tel;
+
+    private String homepage;
+
+
+
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "point_address_id")
+    private PointAddress pointAddress;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "point_facility_id")
+    private PointFacility pointFacility;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "point_id") // FK를 PointHour 테이블에 생성
+    private List<PointHour> operatingHours;
+
+    @OneToMany(mappedBy = "point", cascade = CascadeType.ALL)
+    private List<PointRecycleItem> recycleItems = new ArrayList<>();
+
+
+}

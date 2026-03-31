@@ -1,0 +1,121 @@
+package com.example.Integrated.Item.Service;
+
+import com.example.Integrated.Item.Dto.PRI;
+import com.example.Integrated.Item.Dto.SearchItemDto;
+import com.example.Integrated.Item.Entity.PointRecycleItem;
+import com.example.Integrated.Item.Entity.RecycleItem;
+import com.example.Integrated.Item.Mapper.ItemMapper;
+import com.example.Integrated.Item.Repository.PointRecycleItemRepository;
+import com.example.Integrated.Item.Repository.RecycleItemRepository;
+import com.example.Integrated.point.Dto.*;
+import com.example.Integrated.point.Entity.Point;
+import com.example.Integrated.point.Entity.PointAddress;
+import com.example.Integrated.point.Entity.PointFacility;
+import com.example.Integrated.point.Entity.PointHour;
+import com.example.Integrated.point.Mapper.PointMapper;
+import com.example.Integrated.point.Repository.PointRepository;
+import lombok.RequiredArgsConstructor;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
+import org.springframework.stereotype.Service;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ItemService {
+    private static final String BASE_URL = "https://apis.data.go.kr/B552584/kecoapi/rtrvlCmpnPositnService/getCmpnPositnInfo";
+    private static final String SERVICE_KEY = "4DwueaIvHf5cKHAz%2FbT8HT1LecGpnNYrKJmTfDOZ4QOGIBw%2F73UJQJj5ND%2BGhovcV7%2BEzv5299wODKmVmgtoZw%3D%3D";
+
+
+    private final PointRepository pointRepository;
+    private final RecycleItemRepository recycleItemRepository;
+    private final PointRecycleItemRepository pointRecycleItemRepository;
+
+    // api 거점명과 db 거점명을 비교해 거점 id추출  거점에서 수거하는 아이템 api로 받은 후 아이템id와 거점 id를
+    // PointRecycleItem 테이블에 저장
+    public void importAllItems() {
+        System.out.println("=== 🔄 importAllPoints 실행됨 ===");
+
+        int pageNo = 1;
+
+        while (true) {
+
+            try {
+                String urlStr = BASE_URL +
+                        "?serviceKey=" + SERVICE_KEY +
+                        "&returnType=json" +
+                        "&pageNo=" + pageNo +
+                        "&numOfRows=10";
+                System.out.println(urlStr);
+
+                URL url = new URL(urlStr);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+                String result = reader.readLine();
+
+                JSONParser parser = new JSONParser();
+                JSONObject json = (JSONObject) parser.parse(result);
+                JSONObject body = (JSONObject) json.get("body");
+                JSONArray items = (JSONArray) body.get("items");
+
+                if (items == null || items.isEmpty()) break;
+
+                for (Object itemObj : items) {
+                    JSONObject itemJson = (JSONObject) itemObj;
+
+                    PRI item = new PRI(
+                            getStr(itemJson, "positnNm"),
+                            getStr(itemJson, "clctItemCn")
+                    );
+                    Point point = pointRepository.findByName(item.getPositnNm());
+                    if (point == null) continue; // 못 찾으면 넘어감
+
+                    String[] itemNames = item.getClctItemCn().split("\n");
+
+                    for (String itemName : itemNames) {
+                        RecycleItem recycleItem = recycleItemRepository.findByName(itemName.trim());
+                        if (recycleItem == null) continue;
+
+                        PointRecycleItem pri = PointRecycleItem.builder()
+                                .point(point)
+                                .recycleItem(recycleItem)
+                                .build();
+
+                        pointRecycleItemRepository.save(pri);
+                    }
+
+
+
+
+                }
+
+                pageNo++;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                break;
+            }
+        }
+    }
+    private String getStr(JSONObject obj, String key) {
+        System.out.println((String) obj.get(key));
+        return obj.containsKey(key) ? (String) obj.get(key) : "";
+    }
+
+    public List<SearchItemDto> getItem(){
+        List<RecycleItem> recycleItems = recycleItemRepository.findAll();
+        List<SearchItemDto> dtos = ItemMapper.toSearchItemDto(recycleItems);
+        return dtos;
+    }
+
+
+
+
+
+}
