@@ -31,11 +31,19 @@ jobs:
       - name: Build Spring Boot jar
         run: ./gradlew bootJar
 
-      - name: Build Docker image
-        run: docker build -t $IMAGE_NAME:${{ github.sha }} .
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Save Docker image
-        run: docker save -o $IMAGE_NAME.tar $IMAGE_NAME:${{ github.sha }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ARM64 Docker image tar
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          outputs: type=docker,dest=${{ env.IMAGE_NAME }}.tar
 
       - name: Configure SSH key
         env:
