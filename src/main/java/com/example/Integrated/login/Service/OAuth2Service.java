@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-import static com.mysql.cj.conf.PropertyKey.logger;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor

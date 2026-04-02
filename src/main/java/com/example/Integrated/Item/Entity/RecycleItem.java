@@ -26,6 +26,7 @@ public class RecycleItem {
 
     private String description;
 
+    @Builder.Default
     @OneToMany(mappedBy = "recycleItem", cascade = CascadeType.ALL)
     private List<PointRecycleItem> points = new ArrayList<>();
 

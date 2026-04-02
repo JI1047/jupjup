@@ -48,6 +48,7 @@ public class Point {
     @JoinColumn(name = "point_id") // FK를 PointHour 테이블에 생성
     private List<PointHour> operatingHours;
 
+    @Builder.Default
     @OneToMany(mappedBy = "point", cascade = CascadeType.ALL)
     private List<PointRecycleItem> recycleItems = new ArrayList<>();
 
