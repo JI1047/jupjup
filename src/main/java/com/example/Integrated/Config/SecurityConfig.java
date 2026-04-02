@@ -45,7 +45,8 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers("/local-login", "/", "/api/auth/**", "/login/**",
-                                "/api/map/**", "/api/item/**", "/api/recycle-history/**").permitAll()
+                                "/api/map/**", "/api/item/**", "/api/recycle-history/**",
+                                "/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
                         //나머지는 로그인 필요
                         .anyRequest().authenticated()
                 )
