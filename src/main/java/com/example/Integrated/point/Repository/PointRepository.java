@@ -12,11 +12,8 @@ public interface PointRepository extends JpaRepository<Point, Long> {
 
 
     @Query("""
-    SELECT DISTINCT p
+    SELECT p
     FROM Point p
-    JOIN FETCH p.pointAddress
-    JOIN FETCH p.recycleItems pri
-    JOIN FETCH pri.recycleItem
     ORDER BY p.id ASC
     """)
     List<Point> findTop165WithAllFetch();
