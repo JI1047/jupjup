@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -122,6 +123,7 @@ public class PositionApiService {
         return obj.containsKey(key) ? (String) obj.get(key) : "";
     }
 
+    @Transactional(readOnly = true)
     public List<PositionDto> getPosition() {
 
         List<Point> points = pointRepository.findTop165WithAllFetch();
