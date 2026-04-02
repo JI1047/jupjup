@@ -32,7 +32,6 @@
             "mode": "thresholds"
           },
           "decimals": 0,
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -98,7 +97,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -164,9 +162,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -213,7 +208,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\",status=~\"5..|4..\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[5m])), 0.0001)) * 100",
+          "expr": "(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\",status=~\"4..|5..\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[5m])), 0.0001)) * 100",
           "legendFormat": "오류율",
           "range": true,
           "refId": "A"
@@ -232,7 +227,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -242,15 +237,15 @@
               },
               {
                 "color": "orange",
-                "value": 70
+                "value": 2
               },
               {
                 "color": "red",
-                "value": 90
+                "value": 5
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "none"
         },
         "overrides": []
       },
@@ -279,13 +274,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "process_cpu_usage",
-          "legendFormat": "CPU",
+          "expr": "sum(rate(jupjup_hibernate_query_execution_total[1m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[1m])), 0.0001)",
+          "legendFormat": "평균 쿼리 수",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "애플리케이션 CPU 사용률",
+      "title": "요청당 평균 쿼리 수",
       "type": "stat"
     },
     {
@@ -298,7 +293,6 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
           "unit": "ms"
         },
         "overrides": []
@@ -312,7 +306,6 @@
       "id": 5,
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -340,7 +333,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "((sum(rate(http_server_requests_seconds_sum{uri=\"/api/map/main\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[5m])), 0.0001))) * 1000",
+          "expr": "(sum(rate(http_server_requests_seconds_sum{uri=\"/api/map/main\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[5m])), 0.0001)) * 1000",
           "legendFormat": "평균",
           "range": true,
           "refId": "C"
@@ -359,8 +352,7 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -373,7 +365,6 @@
       "id": 6,
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -387,13 +378,20 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (status) (rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[1m]))",
-          "legendFormat": "{{status}}",
+          "expr": "sum(rate(jupjup_hibernate_query_execution_total[1m]))",
+          "legendFormat": "쿼리 실행/초",
           "range": true,
           "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(jupjup_hibernate_entity_load_total[1m]))",
+          "legendFormat": "엔티티 로드/초",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "마커 조회 API 상태코드별 처리량",
+      "title": "Hibernate 쿼리 실행 추이",
       "type": "timeseries"
     },
     {
@@ -406,7 +404,6 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
           "unit": "bytes"
         },
         "overrides": []
@@ -420,7 +417,6 @@
       "id": 7,
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -460,7 +456,6 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
           "unit": "short"
         },
         "overrides": []
@@ -474,7 +469,6 @@
       "id": 8,
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -521,7 +515,6 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
           "unit": "percentunit"
         },
         "overrides": []
@@ -535,7 +528,6 @@
       "id": 9,
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -586,6 +578,6 @@
   "timezone": "browser",
   "title": "JupJup 성능 개요",
   "uid": "jupjup-performance-overview",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
