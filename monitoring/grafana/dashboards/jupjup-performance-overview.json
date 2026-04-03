@@ -84,7 +84,7 @@
           "refId": "A"
         }
       ],
-      "title": "마커 조회 API p95 응답시간",
+      "title": "Map API p95 Response Time",
       "type": "stat"
     },
     {
@@ -149,7 +149,7 @@
           "refId": "A"
         }
       ],
-      "title": "마커 조회 API 초당 요청 수",
+      "title": "Map API Requests Per Second",
       "type": "stat"
     },
     {
@@ -209,12 +209,12 @@
         {
           "editorMode": "code",
           "expr": "((sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\",status=~\"4..|5..\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[5m])), 0.0001)) * 100) or vector(0)",
-          "legendFormat": "오류율",
+          "legendFormat": "error rate",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "마커 조회 API 오류율",
+      "title": "Map API Error Rate",
       "type": "stat"
     },
     {
@@ -232,20 +232,20 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
                 "color": "orange",
-                "value": 2
+                "value": 0.6
               },
               {
-                "color": "red",
-                "value": 5
+                "color": "green",
+                "value": 0.8
               }
             ]
           },
-          "unit": "none"
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -255,7 +255,7 @@
         "x": 12,
         "y": 0
       },
-      "id": 4,
+      "id": 11,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -274,13 +274,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(jupjup_hibernate_query_execution_total[1m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[1m])), 0.0001)",
-          "legendFormat": "평균 쿼리 수",
+          "expr": "sum(rate(redis_keyspace_hits_total[5m])) / clamp_min(sum(rate(redis_keyspace_hits_total[5m])) + sum(rate(redis_keyspace_misses_total[5m])), 0.0001)",
+          "legendFormat": "hit ratio",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "요청당 평균 쿼리 수",
+      "title": "Redis Cache Hit Ratio",
       "type": "stat"
     },
     {
@@ -311,7 +311,7 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -321,7 +321,7 @@
         "x": 16,
         "y": 0
       },
-      "id": 10,
+      "id": 12,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -340,13 +340,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(jupjup_request_entity_load_count_sum{uri=\"/api/map/main\"}[1m])) / clamp_min(sum(rate(jupjup_request_entity_load_count_count{uri=\"/api/map/main\"}[1m])), 0.0001)",
-          "legendFormat": "평균 엔티티 로드 수",
+          "expr": "sum(rate(redis_keyspace_hits_total[1m]))",
+          "legendFormat": "hits/s",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "요청당 평균 엔티티 로드 수",
+      "title": "Redis Cache Hits Per Second",
       "type": "stat"
     },
     {
@@ -400,12 +400,12 @@
         {
           "editorMode": "code",
           "expr": "(sum(rate(http_server_requests_seconds_sum{uri=\"/api/map/main\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{uri=\"/api/map/main\"}[5m])), 0.0001)) * 1000",
-          "legendFormat": "평균",
+          "legendFormat": "avg",
           "range": true,
           "refId": "C"
         }
       ],
-      "title": "마커 조회 API 응답시간 추이",
+      "title": "Map API Response Time Trend",
       "type": "timeseries"
     },
     {
@@ -445,19 +445,71 @@
         {
           "editorMode": "code",
           "expr": "sum(rate(jupjup_hibernate_query_execution_total[1m]))",
-          "legendFormat": "쿼리 실행/초",
+          "legendFormat": "queries/sec",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
           "expr": "sum(rate(jupjup_hibernate_entity_load_total[1m]))",
-          "legendFormat": "엔티티 로드/초",
+          "legendFormat": "entities/sec",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Hibernate 쿼리 실행 추이",
+      "title": "Hibernate Query Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(redis_keyspace_hits_total[1m]))",
+          "legendFormat": "hits/s",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(redis_keyspace_misses_total[1m]))",
+          "legendFormat": "misses/s",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Redis Hits and Misses",
       "type": "timeseries"
     },
     {
@@ -477,10 +529,10 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 13
       },
-      "id": 7,
+      "id": 14,
       "options": {
         "legend": {
           "displayMode": "table",
@@ -496,20 +548,20 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"})",
-          "legendFormat": "사용 중 힙",
+          "expr": "redis_memory_used_bytes",
+          "legendFormat": "used memory",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "sum(jvm_memory_max_bytes{area=\"heap\"})",
-          "legendFormat": "최대 힙",
+          "expr": "redis_config_maxmemory",
+          "legendFormat": "max memory",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "JVM 힙 메모리",
+      "title": "Redis Memory Usage",
       "type": "timeseries"
     },
     {
@@ -528,9 +580,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 13
+        "w": 12,
+        "x": 0,
+        "y": 21
       },
       "id": 8,
       "options": {
@@ -549,26 +601,26 @@
         {
           "editorMode": "code",
           "expr": "hikaricp_connections_active",
-          "legendFormat": "활성 커넥션",
+          "legendFormat": "active",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
           "expr": "hikaricp_connections_idle",
-          "legendFormat": "유휴 커넥션",
+          "legendFormat": "idle",
           "range": true,
           "refId": "B"
         },
         {
           "editorMode": "code",
           "expr": "hikaricp_connections_max",
-          "legendFormat": "최대 커넥션",
+          "legendFormat": "max",
           "range": true,
           "refId": "C"
         }
       ],
-      "title": "HikariCP 커넥션 풀",
+      "title": "HikariCP Connections",
       "type": "timeseries"
     },
     {
@@ -587,9 +639,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 13
+        "w": 12,
+        "x": 12,
+        "y": 21
       },
       "id": 9,
       "options": {
@@ -608,19 +660,19 @@
         {
           "editorMode": "code",
           "expr": "system_cpu_usage",
-          "legendFormat": "시스템 CPU",
+          "legendFormat": "system cpu",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
           "expr": "process_cpu_usage",
-          "legendFormat": "프로세스 CPU",
+          "legendFormat": "process cpu",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "CPU 사용률 추이",
+      "title": "CPU Usage Trend",
       "type": "timeseries"
     }
   ],
@@ -631,7 +683,8 @@
   "tags": [
     "jupjup",
     "spring",
-    "performance"
+    "performance",
+    "redis"
   ],
   "templating": {
     "list": []
@@ -642,8 +695,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "JupJup 성능 개요",
+  "title": "JupJup Performance Overview",
   "uid": "jupjup-performance-overview",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

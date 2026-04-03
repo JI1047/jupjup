@@ -30,6 +30,18 @@ services:
     networks:
       - monitoring
 
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0
+    container_name: integrated-login-redis-exporter
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
   prometheus:
     image: prom/prometheus:latest
     container_name: integrated-login-prometheus
@@ -41,6 +53,7 @@ services:
       - "9090:9090"
     depends_on:
       - app
+      - redis-exporter
     networks:
       - monitoring
 
