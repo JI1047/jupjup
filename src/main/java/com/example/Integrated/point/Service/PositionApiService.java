@@ -1,11 +1,17 @@
 package com.example.Integrated.point.Service;
 
-
+import com.example.Integrated.Config.CacheNames;
 import com.example.Integrated.Item.Entity.PointRecycleItem;
 import com.example.Integrated.Item.Entity.RecycleItem;
 import com.example.Integrated.Item.Repository.PointRecycleItemRepository;
 import com.example.Integrated.Item.Repository.RecycleItemRepository;
-import com.example.Integrated.point.Dto.*;
+import com.example.Integrated.point.Dto.CmpnPositnItem;
+import com.example.Integrated.point.Dto.PointAddressDto;
+import com.example.Integrated.point.Dto.PointDto;
+import com.example.Integrated.point.Dto.PointFacilityDto;
+import com.example.Integrated.point.Dto.PointHourDto;
+import com.example.Integrated.point.Dto.PositionDto;
+import com.example.Integrated.point.Dto.SearchItemPointDto;
 import com.example.Integrated.point.Entity.Point;
 import com.example.Integrated.point.Entity.PointAddress;
 import com.example.Integrated.point.Entity.PointFacility;
@@ -16,21 +22,14 @@ import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,21 +45,26 @@ public class PositionApiService {
     private static final String BASE_URL = "https://apis.data.go.kr/B552584/kecoapi/rtrvlCmpnPositnService/getCmpnPositnInfo";
     private static final String SERVICE_KEY = "4DwueaIvHf5cKHAz%2FbT8HT1LecGpnNYrKJmTfDOZ4QOGIBw%2F73UJQJj5ND%2BGhovcV7%2BEzv5299wODKmVmgtoZw%3D%3D";
 
-
+    @CacheEvict(
+            cacheNames = {
+                    CacheNames.POINTS_MAIN,
+                    CacheNames.ITEMS_SEARCH,
+                    CacheNames.POINTS_BY_ITEM_IDS
+            },
+            allEntries = true
+    )
     public void importAllPoints() {
-        System.out.println("=== 🔄 importAllPoints 실행됨 ===");
+        System.out.println("=== importAllPoints ===");
 
         int pageNo = 1;
 
         while (true) {
-
             try {
                 String urlStr = BASE_URL +
                         "?serviceKey=" + SERVICE_KEY +
                         "&returnType=json" +
                         "&pageNo=" + pageNo +
                         "&numOfRows=10";
-                System.out.println(urlStr);
 
                 URL url = new URL(urlStr);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
@@ -71,7 +75,9 @@ public class PositionApiService {
                 JSONObject body = (JSONObject) json.get("body");
                 JSONArray items = (JSONArray) body.get("items");
 
-                if (items == null || items.isEmpty()) break;
+                if (items == null || items.isEmpty()) {
+                    break;
+                }
 
                 for (Object itemObj : items) {
                     JSONObject itemJson = (JSONObject) itemObj;
@@ -106,28 +112,31 @@ public class PositionApiService {
                     List<PointHour> hours = PointMapper.toPointHour(hourDtos);
 
                     Point point = PointMapper.toPoint(pointDto, facility, address, hours);
-
                     pointRepository.save(point);
                 }
 
                 pageNo++;
-
             } catch (Exception e) {
                 e.printStackTrace();
                 break;
             }
         }
     }
+
+    @Scheduled(cron = "${app.scheduler.points-refresh-cron}")
+    public void scheduledImportAllPoints() {
+        importAllPoints();
+    }
+
     private String getStr(JSONObject obj, String key) {
-        System.out.println((String) obj.get(key));
         return obj.containsKey(key) ? (String) obj.get(key) : "";
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheNames.POINTS_MAIN)
     public List<PositionDto> getPosition() {
-
         List<Point> points = pointRepository.findTop165WithAllFetch();
-        List<PositionDto> dtos=new ArrayList<>();
+        List<PositionDto> dtos = new ArrayList<>();
         for (Point point : points) {
             List<RecycleItem> items = point.getRecycleItems()
                     .stream()
@@ -139,18 +148,15 @@ public class PositionApiService {
         return dtos;
     }
 
+    @Cacheable(cacheNames = CacheNames.POINTS_BY_ITEM_IDS, keyGenerator = "keyGenerator")
     public List<SearchItemPointDto> findPointsByItemIds(List<Long> itemIds) {
-        List<Long> pointsId = pointRepository.findPointIdsThatCollectAllItems(itemIds,itemIds.size());
+        List<Long> pointsId = pointRepository.findPointIdsThatCollectAllItems(itemIds, itemIds.size());
         List<SearchItemPointDto> dtos = new ArrayList<>();
-        for(Long pointId : pointsId) {
+        for (Long pointId : pointsId) {
             Point point = pointRepository.findById(pointId)
-                    .orElseThrow(() -> new IllegalArgumentException("없는 pointId: " + pointId));;
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown pointId: " + pointId));
             dtos.add(PointMapper.toSearchItemPointDtoList(point));
         }
         return dtos;
-
     }
-
-
-
 }

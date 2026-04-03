@@ -10,8 +10,23 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_TTL_DAYS: ${CACHE_TTL_DAYS:-7}
+      POINTS_REFRESH_CRON: ${POINTS_REFRESH_CRON:-0 0 3 * * *}
+      ITEMS_REFRESH_CRON: ${ITEMS_REFRESH_CRON:-0 30 3 * * *}
     ports:
       - "8081:8080"
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  redis:
+    image: redis:7-alpine
+    container_name: integrated-login-redis
+    ports:
+      - "6379:6379"
     networks:
       - monitoring
 
