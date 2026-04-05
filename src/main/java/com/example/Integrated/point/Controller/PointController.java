@@ -21,11 +21,17 @@ public class PointController {
     @GetMapping("/test-import")
     public String testImport() {
         positionApiService.importAllPoints();
-        return "✅ importAllPoints 수동 호출 완료";
+        return "importAllPoints completed";
+    }
+
+    @GetMapping("/test-clear-cache")
+    public String testClearCache() {
+        cachedPointQueryService.evictPointsMain();
+        return "pointsMain cache cleared";
     }
 
     @GetMapping("/main")
-    public List<PositionDto> getPosition(){
+    public List<PositionDto> getPosition() {
         return cachedPointQueryService.getPosition();
     }
 }
