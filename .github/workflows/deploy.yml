@@ -82,7 +82,17 @@ jobs:
               -p 8080:8080 \
               $IMAGE_NAME:${{ github.sha }}
 
-            sleep 10
-            curl --fail http://localhost:8080/actuator/health
+            for i in $(seq 1 18); do
+              if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
+                break
+              fi
+
+              if [ "$i" -eq 18 ]; then
+                docker logs --tail 200 $CONTAINER_NAME
+                exit 1
+              fi
+
+              sleep 5
+            done
             rm -f $REMOTE_IMAGE_TAR
           EOF
