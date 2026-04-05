@@ -10,6 +10,9 @@ env:
   IMAGE_NAME: jubjub-backend
   CONTAINER_NAME: jubjub-backend
   REMOTE_IMAGE_TAR: /tmp/jubjub-backend.tar
+  REMOTE_ENV_FILE: /home/ubuntu/apps/jupjup-monitoring-backend/.env
+  REMOTE_DOCKER_NETWORK: jupjup-monitoring-backend_monitoring
+  LEGACY_CONTAINER_NAME: integrated-login-app
 
 jobs:
   deploy:
@@ -63,8 +66,23 @@ jobs:
           ssh -i ~/.ssh/jubjub.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
             set -e
             docker load -i $REMOTE_IMAGE_TAR
+            docker stop $LEGACY_CONTAINER_NAME || true
+            docker rm $LEGACY_CONTAINER_NAME || true
             docker stop $CONTAINER_NAME || true
             docker rm $CONTAINER_NAME || true
-            docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8080:8080 $IMAGE_NAME:${{ github.sha }}
+
+            docker run -d \
+              --name $CONTAINER_NAME \
+              --restart unless-stopped \
+              --network $REMOTE_DOCKER_NETWORK \
+              --env-file $REMOTE_ENV_FILE \
+              -e SPRING_PROFILES_ACTIVE=docker \
+              -e REDIS_HOST=redis \
+              -e REDIS_PORT=6379 \
+              -p 8080:8080 \
+              $IMAGE_NAME:${{ github.sha }}
+
+            sleep 10
+            curl --fail http://localhost:8080/actuator/health
             rm -f $REMOTE_IMAGE_TAR
           EOF
