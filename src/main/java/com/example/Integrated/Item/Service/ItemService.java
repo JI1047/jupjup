@@ -1,8 +1,6 @@
 package com.example.Integrated.Item.Service;
 
 import com.example.Integrated.Config.CacheNames;
-import com.example.Integrated.Config.CacheMetricsService;
-import com.example.Integrated.Config.VersionedCacheService;
 import com.example.Integrated.Item.Dto.PRI;
 import com.example.Integrated.Item.Dto.SearchItemDto;
 import com.example.Integrated.Item.Entity.PointRecycleItem;
@@ -17,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,9 +37,7 @@ public class ItemService {
     private final PointRepository pointRepository;
     private final RecycleItemRepository recycleItemRepository;
     private final PointRecycleItemRepository pointRecycleItemRepository;
-    private final CacheMetricsService cacheMetricsService;
-    private final VersionedCacheService versionedCacheService;
-    private final com.example.Integrated.point.Service.CacheWarmupService cacheWarmupService;
+    private final CacheManager cacheManager;
 
     @CacheEvict(
             cacheNames = {
@@ -112,11 +110,8 @@ public class ItemService {
         }
 
         if (refreshSucceeded) {
-            String newVersion = versionedCacheService.createNextVersion();
-            cacheWarmupService.warmPointsMain(newVersion);
-            versionedCacheService.switchToVersion(CacheNames.POINTS_MAIN, newVersion);
-            cacheMetricsService.recordVersionSwitch(CacheNames.POINTS_MAIN);
-            log.info("Switched pointsMain cache to version {} after item refresh", newVersion);
+            evictPointsMainCache();
+            log.info("Evicted pointsMain cache after item refresh");
         }
     }
 
@@ -127,6 +122,14 @@ public class ItemService {
 
     private String getStr(JSONObject obj, String key) {
         return obj.containsKey(key) ? (String) obj.get(key) : "";
+    }
+
+    private void evictPointsMainCache() {
+        Cache cache = cacheManager.getCache(CacheNames.POINTS_MAIN);
+        if (cache == null) {
+            throw new IllegalStateException("Cache not configured: " + CacheNames.POINTS_MAIN);
+        }
+        cache.clear();
     }
 
     @Cacheable(cacheNames = CacheNames.ITEMS_SEARCH)

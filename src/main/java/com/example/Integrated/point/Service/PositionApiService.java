@@ -1,8 +1,6 @@
 package com.example.Integrated.point.Service;
 
 import com.example.Integrated.Config.CacheNames;
-import com.example.Integrated.Config.CacheMetricsService;
-import com.example.Integrated.Config.VersionedCacheService;
 import com.example.Integrated.Item.Entity.PointRecycleItem;
 import com.example.Integrated.Item.Entity.RecycleItem;
 import com.example.Integrated.Item.Repository.PointRecycleItemRepository;
@@ -25,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -44,9 +44,7 @@ public class PositionApiService {
     private final PointRepository pointRepository;
     private final PointRecycleItemRepository pointRecycleItemRepository;
     private final RecycleItemRepository recycleItemRepository;
-    private final CacheMetricsService cacheMetricsService;
-    private final VersionedCacheService versionedCacheService;
-    private final CacheWarmupService cacheWarmupService;
+    private final CacheManager cacheManager;
 
     private static final String BASE_URL = "https://apis.data.go.kr/B552584/kecoapi/rtrvlCmpnPositnService/getCmpnPositnInfo";
     private static final String SERVICE_KEY = "4DwueaIvHf5cKHAz%2FbT8HT1LecGpnNYrKJmTfDOZ4QOGIBw%2F73UJQJj5ND%2BGhovcV7%2BEzv5299wODKmVmgtoZw%3D%3D";
@@ -123,11 +121,8 @@ public class PositionApiService {
         }
 
         if (refreshSucceeded) {
-            String newVersion = versionedCacheService.createNextVersion();
-            cacheWarmupService.warmPointsMain(newVersion);
-            versionedCacheService.switchToVersion(CacheNames.POINTS_MAIN, newVersion);
-            cacheMetricsService.recordVersionSwitch(CacheNames.POINTS_MAIN);
-            log.info("Switched pointsMain cache to version {}", newVersion);
+            evictPointsMainCache();
+            log.info("Evicted pointsMain cache after point refresh");
         }
     }
 
@@ -138,6 +133,14 @@ public class PositionApiService {
 
     private String getStr(JSONObject obj, String key) {
         return obj.containsKey(key) ? (String) obj.get(key) : "";
+    }
+
+    private void evictPointsMainCache() {
+        Cache cache = cacheManager.getCache(CacheNames.POINTS_MAIN);
+        if (cache == null) {
+            throw new IllegalStateException("Cache not configured: " + CacheNames.POINTS_MAIN);
+        }
+        cache.clear();
     }
 
     @Transactional(readOnly = true)

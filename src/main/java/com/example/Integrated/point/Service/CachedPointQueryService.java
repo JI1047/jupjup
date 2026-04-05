@@ -2,7 +2,6 @@ package com.example.Integrated.point.Service;
 
 import com.example.Integrated.Config.CacheNames;
 import com.example.Integrated.Config.CacheMetricsService;
-import com.example.Integrated.Config.VersionedCacheService;
 import com.example.Integrated.point.Dto.PositionDto;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -17,10 +16,10 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class CachedPointQueryService {
+    private static final String POINTS_MAIN_KEY = "main";
 
     private final PositionApiService positionApiService;
     private final CacheMetricsService cacheMetricsService;
-    private final VersionedCacheService versionedCacheService;
     private final CacheManager cacheManager;
     private final RedissonClient redissonClient;
     private final long lockWaitSeconds;
@@ -29,7 +28,6 @@ public class CachedPointQueryService {
     public CachedPointQueryService(
             PositionApiService positionApiService,
             CacheMetricsService cacheMetricsService,
-            VersionedCacheService versionedCacheService,
             CacheManager cacheManager,
             RedissonClient redissonClient,
             @Value("${app.cache.lock-wait-seconds:3}") long lockWaitSeconds,
@@ -37,7 +35,6 @@ public class CachedPointQueryService {
     ) {
         this.positionApiService = positionApiService;
         this.cacheMetricsService = cacheMetricsService;
-        this.versionedCacheService = versionedCacheService;
         this.cacheManager = cacheManager;
         this.redissonClient = redissonClient;
         this.lockWaitSeconds = lockWaitSeconds;
@@ -45,15 +42,18 @@ public class CachedPointQueryService {
     }
 
     public List<PositionDto> getPosition() {
-        String currentVersion = versionedCacheService.getCurrentVersion(CacheNames.POINTS_MAIN);
-        return getOrLoad(CacheNames.POINTS_MAIN, currentVersion);
+        return getOrLoad(CacheNames.POINTS_MAIN, POINTS_MAIN_KEY);
     }
 
-    public List<PositionDto> warmVersion(String version) {
+    public void evictPointsMain() {
+        getCache(CacheNames.POINTS_MAIN).clear();
+    }
+
+    public List<PositionDto> repopulatePointsMain() {
         Cache cache = getCache(CacheNames.POINTS_MAIN);
         List<PositionDto> positions = positionApiService.loadPositions();
-        cache.put(version, positions);
-        cacheMetricsService.recordPopulation(CacheNames.POINTS_MAIN, "warmup");
+        cache.put(POINTS_MAIN_KEY, positions);
+        cacheMetricsService.recordPopulation(CacheNames.POINTS_MAIN, "cache_miss");
         return positions;
     }
 
@@ -75,7 +75,7 @@ public class CachedPointQueryService {
 
     @SuppressWarnings("unchecked")
     private List<PositionDto> loadWithLock(Cache cache, String cacheName, String version) {
-        RLock lock = redissonClient.getLock(versionedCacheService.buildLockKey(cacheName, version));
+        RLock lock = redissonClient.getLock("lock:" + cacheName + ":" + version);
         boolean locked = false;
 
         try {
@@ -91,10 +91,7 @@ public class CachedPointQueryService {
                     }
                 }
 
-                List<PositionDto> positions = positionApiService.loadPositions();
-                cache.put(version, positions);
-                cacheMetricsService.recordPopulation(cacheName, "cache_miss");
-                return positions;
+                return repopulatePointsMain();
             }
 
             cacheMetricsService.recordLock(cacheName, "timeout");
