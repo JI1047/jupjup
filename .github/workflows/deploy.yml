@@ -82,7 +82,7 @@ jobs:
               -p 8080:8080 \
               $IMAGE_NAME:${{ github.sha }}
 
-            for i in $(seq 1 18); do
+            for i in {1..18}; do
               if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
                 break
               fi
