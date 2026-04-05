@@ -1,6 +1,8 @@
 package com.example.Integrated.Item.Service;
 
 import com.example.Integrated.Config.CacheNames;
+import com.example.Integrated.Config.CacheMetricsService;
+import com.example.Integrated.Config.VersionedCacheService;
 import com.example.Integrated.Item.Dto.PRI;
 import com.example.Integrated.Item.Dto.SearchItemDto;
 import com.example.Integrated.Item.Entity.PointRecycleItem;
@@ -11,6 +13,7 @@ import com.example.Integrated.Item.Repository.RecycleItemRepository;
 import com.example.Integrated.point.Entity.Point;
 import com.example.Integrated.point.Repository.PointRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -24,6 +27,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ItemService {
@@ -33,10 +37,12 @@ public class ItemService {
     private final PointRepository pointRepository;
     private final RecycleItemRepository recycleItemRepository;
     private final PointRecycleItemRepository pointRecycleItemRepository;
+    private final CacheMetricsService cacheMetricsService;
+    private final VersionedCacheService versionedCacheService;
+    private final com.example.Integrated.point.Service.CacheWarmupService cacheWarmupService;
 
     @CacheEvict(
             cacheNames = {
-                    CacheNames.POINTS_MAIN,
                     CacheNames.ITEMS_SEARCH,
                     CacheNames.POINTS_BY_ITEM_IDS
             },
@@ -46,6 +52,7 @@ public class ItemService {
         System.out.println("=== importAllItems ===");
 
         int pageNo = 1;
+        boolean refreshSucceeded = true;
 
         while (true) {
             try {
@@ -98,9 +105,18 @@ public class ItemService {
 
                 pageNo++;
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Failed to import items page {}", pageNo, e);
+                refreshSucceeded = false;
                 break;
             }
+        }
+
+        if (refreshSucceeded) {
+            String newVersion = versionedCacheService.createNextVersion();
+            cacheWarmupService.warmPointsMain(newVersion);
+            versionedCacheService.switchToVersion(CacheNames.POINTS_MAIN, newVersion);
+            cacheMetricsService.recordVersionSwitch(CacheNames.POINTS_MAIN);
+            log.info("Switched pointsMain cache to version {} after item refresh", newVersion);
         }
     }
 

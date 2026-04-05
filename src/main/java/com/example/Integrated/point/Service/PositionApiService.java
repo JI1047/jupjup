@@ -1,6 +1,8 @@
 package com.example.Integrated.point.Service;
 
 import com.example.Integrated.Config.CacheNames;
+import com.example.Integrated.Config.CacheMetricsService;
+import com.example.Integrated.Config.VersionedCacheService;
 import com.example.Integrated.Item.Entity.PointRecycleItem;
 import com.example.Integrated.Item.Entity.RecycleItem;
 import com.example.Integrated.Item.Repository.PointRecycleItemRepository;
@@ -19,10 +21,10 @@ import com.example.Integrated.point.Entity.PointHour;
 import com.example.Integrated.point.Mapper.PointMapper;
 import com.example.Integrated.point.Repository.PointRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PositionApiService {
@@ -41,22 +44,18 @@ public class PositionApiService {
     private final PointRepository pointRepository;
     private final PointRecycleItemRepository pointRecycleItemRepository;
     private final RecycleItemRepository recycleItemRepository;
+    private final CacheMetricsService cacheMetricsService;
+    private final VersionedCacheService versionedCacheService;
+    private final CacheWarmupService cacheWarmupService;
 
     private static final String BASE_URL = "https://apis.data.go.kr/B552584/kecoapi/rtrvlCmpnPositnService/getCmpnPositnInfo";
     private static final String SERVICE_KEY = "4DwueaIvHf5cKHAz%2FbT8HT1LecGpnNYrKJmTfDOZ4QOGIBw%2F73UJQJj5ND%2BGhovcV7%2BEzv5299wODKmVmgtoZw%3D%3D";
 
-    @CacheEvict(
-            cacheNames = {
-                    CacheNames.POINTS_MAIN,
-                    CacheNames.ITEMS_SEARCH,
-                    CacheNames.POINTS_BY_ITEM_IDS
-            },
-            allEntries = true
-    )
     public void importAllPoints() {
         System.out.println("=== importAllPoints ===");
 
         int pageNo = 1;
+        boolean refreshSucceeded = true;
 
         while (true) {
             try {
@@ -117,9 +116,18 @@ public class PositionApiService {
 
                 pageNo++;
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Failed to import points page {}", pageNo, e);
+                refreshSucceeded = false;
                 break;
             }
+        }
+
+        if (refreshSucceeded) {
+            String newVersion = versionedCacheService.createNextVersion();
+            cacheWarmupService.warmPointsMain(newVersion);
+            versionedCacheService.switchToVersion(CacheNames.POINTS_MAIN, newVersion);
+            cacheMetricsService.recordVersionSwitch(CacheNames.POINTS_MAIN);
+            log.info("Switched pointsMain cache to version {}", newVersion);
         }
     }
 
@@ -133,8 +141,7 @@ public class PositionApiService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = CacheNames.POINTS_MAIN)
-    public List<PositionDto> getPosition() {
+    public List<PositionDto> loadPositions() {
         List<Point> points = pointRepository.findTop165WithAllFetch();
         List<PositionDto> dtos = new ArrayList<>();
         for (Point point : points) {
