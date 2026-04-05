@@ -1,8 +1,8 @@
 package com.example.Integrated.point.Controller;
 
 import com.example.Integrated.point.Dto.PositionDto;
+import com.example.Integrated.point.Service.CachedPointQueryService;
 import com.example.Integrated.point.Service.PositionApiService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +16,7 @@ import java.util.List;
 public class PointController {
 
     private final PositionApiService positionApiService;
+    private final CachedPointQueryService cachedPointQueryService;
 
     @GetMapping("/test-import")
     public String testImport() {
@@ -25,6 +26,6 @@ public class PointController {
 
     @GetMapping("/main")
     public List<PositionDto> getPosition(){
-        return positionApiService.getPosition();
+        return cachedPointQueryService.getPosition();
     }
 }
