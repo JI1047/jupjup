@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SsmRunCommandForDeploy",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:SendCommand",
+        "ssm:GetCommandInvocation",
+        "ssm:ListCommandInvocations",
+        "ssm:CancelCommand"
+      ],
+      "Resource": [
+        "arn:aws:ec2:ap-northeast-2:<AWS_ACCOUNT_ID>:instance/i-08968f306a871d2a4",
+        "arn:aws:ssm:ap-northeast-2:*:document/AWS-RunShellScript",
+        "arn:aws:ssm:ap-northeast-2:<AWS_ACCOUNT_ID>:*"
+      ]
+    }
+  ]
+}
