@@ -15,6 +15,28 @@
         "arn:aws:ssm:ap-northeast-2:*:document/AWS-RunShellScript",
         "arn:aws:ssm:ap-northeast-2:<AWS_ACCOUNT_ID>:*"
       ]
+    },
+    {
+      "Sid": "PushDeployImageToEcr",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ManageDeployRepository",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:CompleteLayerUpload",
+        "ecr:CreateRepository",
+        "ecr:DescribeRepositories",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage",
+        "ecr:UploadLayerPart"
+      ],
+      "Resource": "arn:aws:ecr:ap-northeast-2:<AWS_ACCOUNT_ID>:repository/integrated-login-app"
     }
   ]
 }

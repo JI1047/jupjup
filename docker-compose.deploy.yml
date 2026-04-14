@@ -1,0 +1,86 @@
+services:
+  app:
+    image: ${APP_IMAGE:-integrated-login-app:local}
+    container_name: integrated-login-app
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_TTL_DAYS: ${CACHE_TTL_DAYS:-7}
+      CACHE_LOCK_WAIT_SECONDS: ${CACHE_LOCK_WAIT_SECONDS:-3}
+      CACHE_LOCK_LEASE_SECONDS: ${CACHE_LOCK_LEASE_SECONDS:-5}
+      POINTS_REFRESH_CRON: ${POINTS_REFRESH_CRON:-0 0 3 * * *}
+      ITEMS_REFRESH_CRON: ${ITEMS_REFRESH_CRON:-0 30 3 * * *}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  redis:
+    image: redis:7-alpine
+    container_name: integrated-login-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0
+    container_name: integrated-login-redis-exporter
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    ports:
+      - "9121:9121"
+    restart: unless-stopped
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: integrated-login-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    depends_on:
+      - app
+      - redis-exporter
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: integrated-login-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - monitoring
+
+volumes:
+  grafana-data:
+
+networks:
+  monitoring:
