@@ -45,7 +45,6 @@ jobs:
           cat > ssm-parameters.json <<EOF
           {
             "commands": [
-              "set -euo pipefail",
               "git config --global --add safe.directory '${REMOTE_APP_DIR}'",
               "cd '${REMOTE_APP_DIR}'",
               "git fetch origin main",
