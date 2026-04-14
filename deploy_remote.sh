@@ -10,6 +10,9 @@ HEALTHCHECK_SLEEP_SECONDS="${DEPLOY_HEALTHCHECK_SLEEP_SECONDS:-5}"
 
 cd "$APP_DIR"
 
+echo "[stop existing app]"
+sudo docker rm -f "$APP_CONTAINER" 2>/dev/null || true
+
 echo "[image] $APP_IMAGE"
 sudo docker pull "$APP_IMAGE"
 
