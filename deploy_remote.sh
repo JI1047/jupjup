@@ -10,14 +10,39 @@ HEALTHCHECK_SLEEP_SECONDS="${DEPLOY_HEALTHCHECK_SLEEP_SECONDS:-5}"
 
 cd "$APP_DIR"
 
+cleanup_port_8080_conflicts() {
+  local port_holders
+  port_holders="$(sudo docker ps -a --filter publish=8080 --format '{{.Names}}' || true)"
+
+  if [ -z "$port_holders" ]; then
+    return 0
+  fi
+
+  echo "[stop port 8080 holders]"
+  for container in $port_holders; do
+    if [ "$container" = "$APP_CONTAINER" ]; then
+      continue
+    fi
+
+    echo "$container"
+    sudo docker rm -f "$container" 2>/dev/null || true
+  done
+}
+
 echo "[stop existing app]"
 sudo docker rm -f "$APP_CONTAINER" 2>/dev/null || true
+cleanup_port_8080_conflicts
 
 echo "[image] $APP_IMAGE"
 sudo docker pull "$APP_IMAGE"
 
 echo "[compose up] $COMPOSE_FILE"
-sudo APP_IMAGE="$APP_IMAGE" docker compose -f "$COMPOSE_FILE" up -d --no-build
+if ! sudo APP_IMAGE="$APP_IMAGE" docker compose -f "$COMPOSE_FILE" up -d --no-build; then
+  echo "[port 8080 status]"
+  sudo docker ps -a --filter publish=8080 --format 'table {{.Names}}\t{{.Ports}}\t{{.Status}}' || true
+  sudo ss -tulpn | grep ':8080' || true
+  exit 1
+fi
 
 echo "[containers]"
 sudo docker compose -f "$COMPOSE_FILE" ps
