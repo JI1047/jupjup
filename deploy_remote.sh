@@ -3,7 +3,7 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/home/ubuntu/apps/jupjup-monitoring-backend}"
 APP_SERVICE="${APP_SERVICE:-app}"
 APP_CONTAINER="${APP_CONTAINER:-integrated-login-app}"
-HEALTHCHECK_URL="${DEPLOY_HEALTHCHECK_URL:-http://localhost:8081/actuator/health}"
+HEALTHCHECK_URL="${DEPLOY_HEALTHCHECK_URL:-http://localhost:8080/actuator/health}"
 HEALTHCHECK_RETRIES="${DEPLOY_HEALTHCHECK_RETRIES:-18}"
 HEALTHCHECK_SLEEP_SECONDS="${DEPLOY_HEALTHCHECK_SLEEP_SECONDS:-5}"
 

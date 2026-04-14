@@ -14,7 +14,7 @@ env:
   AWS_REGION: ap-northeast-2
   EC2_INSTANCE_ID: i-08968f306a871d2a4
   REMOTE_APP_DIR: /home/ubuntu/apps/jupjup-monitoring-backend
-  DEPLOY_HEALTHCHECK_URL: http://localhost:8081/actuator/health
+  DEPLOY_HEALTHCHECK_URL: http://localhost:8080/actuator/health
 
 jobs:
   deploy:
@@ -69,10 +69,13 @@ jobs:
               --output text
           )"
 
+          set +e
           aws ssm wait command-executed \
             --region "$AWS_REGION" \
             --command-id "$command_id" \
             --instance-id "$EC2_INSTANCE_ID"
+          wait_exit_code=$?
+          set -e
 
           aws ssm get-command-invocation \
             --region "$AWS_REGION" \
@@ -83,11 +86,16 @@ jobs:
 
           cat command-result.json
 
+          export WAIT_EXIT_CODE="$wait_exit_code"
           python - <<'PY'
           import json
           from pathlib import Path
+          import os
 
           result = json.loads(Path("command-result.json").read_text())
-          if result["Status"] != "Success":
-              raise SystemExit(f"SSM deployment failed: {result['Status']}")
+          wait_exit_code = int(os.environ["WAIT_EXIT_CODE"])
+          if wait_exit_code != 0 or result["Status"] != "Success":
+              raise SystemExit(
+                  f"SSM deployment failed: waiter_exit={wait_exit_code}, status={result['Status']}"
+              )
           PY
