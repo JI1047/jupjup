@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "jupjup-chat/**"
-      - ".github/workflows/publish-chat.yml"
+    paths:
+      - "src/**"
+      - "build.gradle"
+      - "settings.gradle"
+      - "gradlew"
+      - "gradlew.bat"
+      - "Dockerfile"
+      - "docker-compose.deploy.yml"
+      - "deploy_remote.sh"
+      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 permissions:
