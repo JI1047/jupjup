@@ -16,3 +16,5 @@ npm start
 ```
 
 Default port is `3001`.
+
+This service is intended for image publishing and kubeadm rollout practice.
