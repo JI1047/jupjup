@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "jupjup-chat/**"
+      - ".github/workflows/publish-chat.yml"
   workflow_dispatch:
 
 permissions:

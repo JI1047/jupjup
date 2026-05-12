@@ -11,9 +11,9 @@
         "ssm:CancelCommand"
       ],
       "Resource": [
-        "arn:aws:ec2:ap-northeast-2:<AWS_ACCOUNT_ID>:instance/i-08968f306a871d2a4",
-        "arn:aws:ssm:ap-northeast-2:*:document/AWS-RunShellScript",
-        "arn:aws:ssm:ap-northeast-2:<AWS_ACCOUNT_ID>:*"
+        "arn:aws:ec2:ap-northeast-2:966000660350:instance/i-08968f306a871d2a4",
+        "arn:aws:ssm:ap-northeast-2::document/AWS-RunShellScript",
+        "arn:aws:ssm:ap-northeast-2:966000660350:*"
       ]
     },
     {
@@ -46,8 +46,8 @@
         "ecr:UploadLayerPart"
       ],
       "Resource": [
-        "arn:aws:ecr:ap-northeast-2:<AWS_ACCOUNT_ID>:repository/integrated-login-app",
-        "arn:aws:ecr:ap-northeast-2:<AWS_ACCOUNT_ID>:repository/zzupzzup-chat"
+        "arn:aws:ecr:ap-northeast-2:966000660350:repository/integrated-login-app",
+        "arn:aws:ecr:ap-northeast-2:966000660350:repository/zzupzzup-chat"
       ]
     }
   ]
