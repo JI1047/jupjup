@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/JI1047/jupjup.git
     targetRevision: main
-    path: integrated-login/gitops/rollout-lab/overlays/post-improvement
+    path: gitops/rollout-lab/overlays/post-improvement
   destination:
     server: https://kubernetes.default.svc
     namespace: default
