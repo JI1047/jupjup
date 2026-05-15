@@ -1,0 +1,96 @@
+resources:
+- ../../base
+
+patches:
+- target:
+    kind: Deployment
+    name: integrated-login-api
+  patch: |-
+    - op: replace
+      path: /spec/strategy/rollingUpdate/maxUnavailable
+      value: 0
+    - op: replace
+      path: /spec/strategy/rollingUpdate/maxSurge
+      value: 1
+    - op: replace
+      path: /spec/template/spec/terminationGracePeriodSeconds
+      value: 60
+    - op: add
+      path: /spec/template/spec/containers/0/readinessProbe
+      value:
+        httpGet:
+          path: /actuator/health
+          port: 8080
+          scheme: HTTP
+        initialDelaySeconds: 20
+        periodSeconds: 10
+        timeoutSeconds: 1
+        successThreshold: 1
+        failureThreshold: 3
+    - op: add
+      path: /spec/template/spec/containers/0/livenessProbe
+      value:
+        httpGet:
+          path: /actuator/health
+          port: 8080
+          scheme: HTTP
+        initialDelaySeconds: 40
+        periodSeconds: 15
+        timeoutSeconds: 1
+        successThreshold: 1
+        failureThreshold: 3
+    - op: add
+      path: /spec/template/spec/containers/0/lifecycle
+      value:
+        preStop:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - sleep 20
+- target:
+    kind: Deployment
+    name: zzupzzup-chat
+  patch: |-
+    - op: replace
+      path: /spec/strategy/rollingUpdate/maxUnavailable
+      value: 0
+    - op: replace
+      path: /spec/strategy/rollingUpdate/maxSurge
+      value: 1
+    - op: replace
+      path: /spec/template/spec/terminationGracePeriodSeconds
+      value: 60
+    - op: add
+      path: /spec/template/spec/containers/0/readinessProbe
+      value:
+        httpGet:
+          path: /readyz
+          port: 3001
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        timeoutSeconds: 1
+        successThreshold: 1
+        failureThreshold: 3
+    - op: add
+      path: /spec/template/spec/containers/0/livenessProbe
+      value:
+        httpGet:
+          path: /healthz
+          port: 3001
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 1
+        successThreshold: 1
+        failureThreshold: 3
+    - op: add
+      path: /spec/template/spec/containers/0/lifecycle
+      value:
+        preStop:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - sleep 20

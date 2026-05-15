@@ -1,0 +1,5 @@
+resources:
+- api-deployment.yaml
+- api-service.yaml
+- chat-deployment.yaml
+- chat-service.yaml

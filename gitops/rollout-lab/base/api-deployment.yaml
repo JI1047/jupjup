@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: integrated-login-api
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: integrated-login-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: integrated-login-api
+    spec:
+      imagePullSecrets:
+      - name: ecr-regcred
+      terminationGracePeriodSeconds: 1
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: integrated-login-api
+              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: integrated-login-api
+      containers:
+      - name: api
+        image: 966000660350.dkr.ecr.ap-northeast-2.amazonaws.com/integrated-login-app:9cf2b3cb13f6f582711d54e829943f1bd0440c8a
+        imagePullPolicy: Always
+        env:
+        - name: SPRING_DATA_REDIS_HOST
+          value: redis
+        - name: SPRING_DATA_REDIS_PORT
+          value: "6379"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
